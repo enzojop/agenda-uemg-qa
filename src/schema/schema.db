@@ -1,0 +1,18 @@
+-- Tabela de Usuários (Professores e Alunos)
+CREATE TABLE usuarios (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nome TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  tipo TEXT CHECK (tipo IN ('professor', 'aluno')) NOT NULL
+);
+
+-- Tabela de Prazos (Provas, Trabalhos, Atividades)
+CREATE TABLE prazos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  titulo TEXT NOT NULL,
+  descricao TEXT,
+  data_entrega TIMESTAMP WITH TIME ZONE NOT NULL,
+  tipo_evento TEXT CHECK (tipo_evento IN ('prova', 'trabalho', 'atividade')) NOT NULL,
+  criado_por UUID REFERENCES usuarios(id),
+  status BOOLEAN DEFAULT false -- false = pendente, true = concluído
+);
