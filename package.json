@@ -1,13 +1,11 @@
 {
   "name": "sistema-controle-prazos",
   "version": "1.0.0",
-  "description": "Sistema de Controle de Prazos Acadêmicos - Trabalho de Qualidade de Software",
-  "main": "supabase.js",
+  "description": "Agenda UEMG - Trabalho de Qualidade de Software",
+  "main": "src/js/app.js",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "start": "npx serve ."
-    
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --passWithNoTests --coverage"
   },
   "devDependencies": {
     "jest": "^29.0.0",

@@ -1,0 +1,46 @@
+name: CI/CD - Agenda UEMG
+
+# A pipeline é disparada em Push ou Pull Request para a main 
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  quality-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Instalar dependências
+        run: npm install
+
+      - name: 🧪 Executar Testes Unitários
+        # Injeta os segredos configurados no GitHub como variáveis de ambiente 
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: npm test
+
+      - name: 🔧 Preparar Variáveis para GH Pages (Vanilla JS)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        # Substitui process.env pelas strings fixas para rodar diretamente sem Webpack/Vite
+        run: |
+          sed -i "s|process.env.SUPABASE_URL|'${{ secrets.SUPABASE_URL }}'|g" src/js/supabase.js
+          sed -i "s|process.env.SUPABASE_ANON_KEY|'${{ secrets.SUPABASE_ANON_KEY }}'|g" src/js/supabase.js
+
+      - name: 🚀 Deploy para GitHub Pages
+        # O deploy só ocorre se os testes passarem e o código for para a main
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: . 
+          branch: gh-pages
