@@ -117,4 +117,5 @@ Esse App exala dados persistentes usando tabelas com a seguinte Modelagem Relaci
 
 ---
 
-*Desenvolvido exclusivamente como parte do projeto e estudos relacionados à Unidade UEMG.*
+*Atividade Avaliativa 1 — Qualidade de Software na
+Prática com CI/CD*
