@@ -136,8 +136,7 @@ const initApp = () => {
             let data;
             if (modoAtual === 'login') {
                 const response = await logarUsuario(email, password);
-                data = response.user ? response : { user: response.user, session: response.session }; // Padronizando caso venha root
-                showToast('Login realizado com sucesso!', 'success');
+                data = response;
                 
                 const userRole = data.user?.user_metadata?.role || 'aluno';
                 const useCurso = data.user?.user_metadata?.curso || 'Sistemas de Informação';
