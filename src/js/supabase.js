@@ -1,35 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+// ✅ O jeito correto para rodar direto no navegador via CDN:
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Conforme solicitado: utilização de process.env. 
-// Como navegadores não possuem process.env nativamente sem usar Webpack/Vite:
-// Oferecemos um fallback das chaves reias (do .env) para que os testes no servidor local (npx serve) conectem imediatamente com seu banco Supabase.
-// A pipeline de CI/CD fará a substituição estática das variáveis "process.env" na publicação para o GitHub Pages.
-const fallbackUrl = 'https://miimyptdojvvofwoxuub.supabase.co';
-const fallbackKey = 'sb_publishable_DvIThg8wOmVjoVncrwOu4A_vU9FTLVB';
+const fallbackUrl = 'https://expdgbgibiqjggbszkbc.supabase.co';
+const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cGRnYmdpYmlxamdnYnN6a2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjAwOTgsImV4cCI6MjA5MDUzNjA5OH0.YK9D-3fBxw5eKpshrunLPowhT2yVQA3-165souAVUZA';
 
-// Tenta usar o process.env injetado do build ou Jest, senão usa as credenciais ativas do Enzo.
 const supabaseUrl = (typeof process !== 'undefined' && process.env.SUPABASE_URL) ? process.env.SUPABASE_URL : fallbackUrl;
 const supabaseKey = (typeof process !== 'undefined' && process.env.SUPABASE_ANON_KEY) ? process.env.SUPABASE_ANON_KEY : fallbackKey;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ===================================
-// AUTH METHODS (Sistema de contas)
+// AUTH METHODS
 // ===================================
 
-/**
- * Cria uma nova conta de usuário injetando no meta-data a role da academia
- */
-export const cadastrarUsuario = async (email, password, role, curso, periodo) => {
+export const cadastrarUsuario = async (email, password, metadata) => {
     const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password,
         options: {
-            data: {
-                role: role, // 'aluno' ou 'professor'
-                curso: curso, // 'Sistemas de Informação'
-                periodo: Number(periodo)
-            }
+            data: metadata // Passa o objeto com name, period e secret_key para o seu SQL Trigger
         }
     });
 
@@ -37,30 +26,20 @@ export const cadastrarUsuario = async (email, password, role, curso, periodo) =>
     return data;
 };
 
-/**
- * Efetua login autenticado
- */
 export const logarUsuario = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password
     });
-
     if (error) throw new Error(error.message);
     return data;
 };
 
-/**
- * Realiza o Logout da sessão baseada em Cookies/Local Storage no navegador.
- */
 export const deslogarUsuario = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
 };
 
-/**
- * Verifica ativamente se existe um usuário guardado na cache do navegador.
- */
 export const getSessaoAtual = async () => {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) return null;
@@ -68,78 +47,79 @@ export const getSessaoAtual = async () => {
 };
 
 // ===================================
-// BASE METHODS (Tabela Prazos)
+// STORAGE (Upload de Arquivos)
+// ===================================
+
+export const uploadArquivo = async (file) => {
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+        
+        // Faz o upload para o bucket 'anexos' (Certifique-se que ele é PÚBLICO no painel)
+        const { data, error } = await supabase.storage
+            .from('anexos')
+            .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('anexos')
+            .getPublicUrl(fileName);
+
+        return publicUrl;
+    } catch (error) {
+        throw new Error('Erro ao subir arquivo: ' + error.message);
+    }
+};
+
+// ===================================
+// CRUD (Tabela EVENTS conforme seu SQL)
 // ===================================
 
 export const persistirPrazo = async (prazo) => {
-    try {
-        const { data, error } = await supabase
-            .from('prazos')
-            .insert([prazo])
-            .select();
-            
-        if (error) {
-            console.error("Erro ao inserir no Supabase DB:", error.message);
-            throw new Error(error.message);
-        }
-        return data;
-    } catch(e) {
-        console.error("Falha de conexão persistir:", e);
-        throw e;
-    }
+    // Ajustado para a sua tabela 'events'
+    const { data, error } = await supabase
+        .from('events')
+        .insert([prazo])
+        .select();
+        
+    if (error) throw new Error(error.message);
+    return data;
 };
 
 export const buscarPrazos = async (periodoParaFiltrar = null) => {
     try {
-        let query = supabase.from('prazos').select('*');
+        // Tabela 'events' conforme seu SQL
+        let query = supabase.from('events').select('*');
         
+        // Se for aluno, o SQL permite filtrar ou o RLS cuida
         if (periodoParaFiltrar) {
-            query = query.eq('periodo', Number(periodoParaFiltrar));
+            // Nota: Se você não salvou o período no evento, o aluno verá os is_public=true
+            query = query.or(`is_public.eq.true`); 
         }
         
-        const { data, error } = await query.order('data_entrega', { ascending: true });
-            
-        if (error) {
-            console.error("Erro buscarPrazos DB:", error.message);
-            throw new Error(error.message);
-        }
+        const { data, error } = await query.order('event_date', { ascending: true });
+        if (error) throw new Error(error.message);
         return data;
     } catch(e) {
-        console.error("Falha ao buscar prazos da rede:", e);
         throw e;
     }
 };
 
 export const atualizarPrazo = async (id, prazo) => {
-    try {
-        const { data, error } = await supabase
-            .from('prazos')
-            .update(prazo)
-            .eq('id', id)
-            .select();
-            
-        if (error) {
-            console.error("Erro atualizarPrazo DB:", error.message);
-            throw new Error(error.message);
-        }
-        return data;
-    } catch(e) {
-        throw e;
-    }
+    const { data, error } = await supabase
+        .from('events')
+        .update(prazo)
+        .eq('id', id)
+        .select();
+    if (error) throw new Error(error.message);
+    return data;
 };
 
 export const excluirPrazo = async (id) => {
-    try {
-        const { error } = await supabase
-            .from('prazos')
-            .delete()
-            .eq('id', id);
-            
-        if (error) {
-            console.error("Erro excluirPrazo DB:", error.message);
-            throw new Error(error.message);
-        }
-    } catch(e) {
-        throw e;
-    }
+    const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id);
+    if (error) throw new Error(error.message);
 };

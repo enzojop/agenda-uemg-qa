@@ -1,182 +1,182 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Agenda UEMG - Prazos Acadêmicos</title>
-   <meta name="description" content="Agenda UEMG ">
-   <link rel="stylesheet" href="./src/css/style.css">
-   <link rel="preconnect" href="https://fonts.googleapis.com">
-   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda UEMG - Prazos e Atividades</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="src/css/style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-
 <body>
-   <!-- Login Screen -->
-<main id="login-screen" class="view active">
-        
+
+    <main id="login-screen">
         <div class="login-brand">
-            <h1 class="brand-title">UNIVERSIDADE</h1>
-            <h1 class="brand-title">DO ESTADO DE MINAS GERAIS</h1>
+            <h1 class="brand-title">Universidade<br>do Estado de Minas Gerais</h1>
         </div>
-      
-      <div class="login-box glass-panel" style="max-width:480px; width:100%; padding:3rem; border-radius:6px; text-align:center;">
-         <div class="login-options">
-            <!-- Sistema de Tabs Simples -->
-            <div class="auth-tabs" style="display:flex; justify-content:center; gap:1rem; margin-bottom:1.5rem;">
-               <button id="tab-login" class="btn btn-primary">Entrar</button>
-               <button id="tab-register" class="btn btn-danger" style="background:transparent; border: 1px solid var(--text-muted); color: var(--text-main);">Criar Conta</button>
+
+        <div class="login-box">
+            <div class="auth-tabs">
+                <button type="button" id="tab-login" class="btn active">Entrar</button>
+                <button type="button" id="tab-register" class="btn">Criar Conta</button>
             </div>
 
-            <form id="auth-form" class="form-grid" style="grid-template-columns: 1fr; margin-top:2rem;">
-               <div class="form-group">
-                  <input type="email" id="auth-email" name="email" required placeholder="Seu endereço de e-mail institucional">
-               </div>
-               <div class="form-group">
-                  <input type="password" id="auth-password" name="password" required placeholder="Sua senha secreta">
-               </div>
-               <div class="form-group hidden" id="register-role-group">
-                  <label for="auth-role" style="text-align:left;">Qual o seu perfil funcional?</label>
-                  <select id="auth-role" name="role">
-                     <option value="aluno">Sou Estudante</option>
-                     <option value="professor">Sou Docente/Professor</option>
-                  </select>
-               </div>
-               <div class="form-group hidden" id="register-academico-group">
-                  <label for="auth-curso" style="text-align:left;">Curso Vinculado</label>
-                  <select id="auth-curso" name="curso" disabled>
-                     <option value="Sistemas de Informação" selected>Sistemas de Informação</option>
-                  </select>
-               </div>
-               <div class="form-group hidden" id="register-periodo-group">
-                  <label for="auth-periodo" style="text-align:left;">Seu Período / Carga</label>
-                  <select id="auth-periodo" name="periodo">
-                     <option value="1">1º Período</option>
-                     <option value="2">2º Período</option>
-                     <option value="3">3º Período</option>
-                     <option value="4">4º Período</option>
-                     <option value="5">5º Período</option>
-                     <option value="6">6º Período</option>
-                     <option value="7">7º Período</option>
-                     <option value="8">8º Período</option>
-                  </select>
-               </div>
-               <div class="form-group actions" style="margin-top:1.5rem;">
-                  <button type="submit" class="btn btn-primary btn-block" id="btn-auth-submit">Entrar</button>
-               </div>
-               <div style="text-align:center; width:100%; margin-top: 1.5rem;">
-                  <a href="#" style="color:var(--primary); font-weight:600; font-size:0.9rem; text-decoration:none;">Esqueceu a senha?</a>
-               </div>
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="E-mail institucional (@discente.uemg.br)" required>
+                <input type="password" id="auth-password" placeholder="Sua senha secreta" required>
+                
+                <div id="register-fields" class="hidden">
+                    <input type="text" id="auth-name" placeholder="Seu Nome Completo">
+                    <select id="auth-periodo">
+                        <option value="">Selecione seu Período</option>
+                        <option value="1">1º Período</option>
+                        <option value="2">2º Período</option>
+                        <option value="3">3º Período</option>
+                        <option value="4">4º Período</option>
+                        <option value="5">5º Período</option>
+                        <option value="6">6º Período</option>
+                        <option value="7">7º Período</option>
+                        <option value="8">8º Período</option>
+                    </select>
+                    <input type="password" id="chave-rep" placeholder="Chave de Representante (Opcional)">
+                </div>
+
+                <button type="submit" id="btn-auth-submit" class="btn btn-primary">Entrar</button>
             </form>
-         </div>
-      </div>
-   </main>
+        </div>
+    </main>
 
-   <!-- Dashboard -->
-   <main id="dashboard-screen" class="view dashboard-layout hidden">
-      <!-- Sidebar -->
-      <aside class="sidebar glass-panel">
-         <div class="sidebar-header">
-            <h2>Agenda<span class="highlight"> UEMG</span></h2>
-         </div>
-         <div class="user-info">
-            <div class="avatar" id="user-avatar">?</div>
-            <div class="user-details">
-               <span id="user-role-label">Perfil</span>
-               <strong id="user-name-label">Usuário Logado</strong>
+
+    <main id="dashboard-screen" class="dashboard-layout hidden">
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Agenda<span class="highlight"> UEMG</span></h2>
             </div>
-         </div>
-         <nav class="sidebar-nav">
-            <ul>
-               <li class="active"><a href="#">Dashboard</a></li>
-            </ul>
-         </nav>
-         <div class="sidebar-footer">
-            <button id="btn-logout" class="btn btn-danger btn-block">Sair do Sistema</button>
-         </div>
-      </aside>
-
-      <!-- Content Area -->
-      <div class="content-area">
-         <header class="topbar">
-            <h1 id="view-title">Todos os Prazos</h1>
-         </header>
-
-         <!-- Add Deadline Form (Professor Only) -->
-         <section id="form-section" class="add-deadline-card glass-panel hidden">
-            <h2>Cadastrar Novo Prazo</h2>
-            <form id="form-prazo" class="form-grid">
-               <div class="form-group">
-                  <label for="titulo">Título da Avaliação</label>
-                  <input type="text" id="titulo" name="titulo" required placeholder="Ex: Prova de Matemática">
-               </div>
-               <div class="form-group">
-                  <label for="tipo_evento">Tipo de Evento</label>
-                  <select id="tipo_evento" name="tipo_evento" required>
-                     <option value="prova">Prova</option>
-                     <option value="trabalho">Trabalho</option>
-                     <option value="atividade">Atividade</option>
-                  </select>
-               </div>
-               <div class="form-group">
-                  <label for="data_entrega">Data e Hora limite</label>
-                  <input type="datetime-local" id="data_entrega" name="data_entrega" required>
-               </div>
-               <div class="form-group">
-                  <label for="periodo_alvo">Turma / Período Alvo</label>
-                  <select id="periodo_alvo" name="periodo" required>
-                     <option value="1">1º Período S.I.</option>
-                     <option value="2">2º Período S.I.</option>
-                     <option value="3">3º Período S.I.</option>
-                     <option value="4">4º Período S.I.</option>
-                     <option value="5">5º Período S.I.</option>
-                     <option value="6">6º Período S.I.</option>
-                     <option value="7">7º Período S.I.</option>
-                     <option value="8">8º Período S.I.</option>
-                  </select>
-               </div>
-               <div class="form-group full-width">
-                  <label for="descricao">Descrição (opcional)</label>
-                  <textarea id="descricao" name="descricao" rows="2"
-                     placeholder="Informações adicionais do prazo..."></textarea>
-               </div>
-               <div class="form-group full-width actions">
-                  <button type="submit" class="btn btn-primary" id="btn-salvar">Gravar Prazo</button>
-               </div>
-            </form>
-         </section>
-
-         <!-- List Deadlines -->
-         <section class="deadlines-container">
-            <div class="loader hidden" id="loader"></div>
-            <div id="prazos-list" class="prazos-grid">
-               <!-- Vão ser injetados os cards via JS aqui -->
+            
+            <div class="user-info">
+                <div class="avatar" id="user-avatar">U</div>
+                <div class="user-details">
+                    <span id="user-role-label">Estudante</span>
+                    <strong id="user-name-label">Carregando...</strong>
+                    <span id="user-period-label">...</span>
+                </div>
             </div>
-            <div id="empty-state" class="empty-state hidden">
-               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-               </svg>
-               <h3>Nenhum prazo pendente!</h3>
-               <p>Tudo tranquilo por enquanto.</p>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-calendar-alt"></i> Timeline de Prazos</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="btn-logout" class="btn btn-danger btn-block">Sair do Sistema</button>
             </div>
-         </section>
-      </div>
-   </main>
+        </aside>
 
-   <div id="toast-container"></div>
+        <div class="content-area">
+            
+            <div class="main-column">
+                <header class="topbar">
+                    <h1>Prazos Acadêmicos</h1>
+                    <button id="open-form-btn" class="btn btn-primary hidden">
+                        <i class="fas fa-plus"></i> Novo Prazo
+                    </button>
+                </header>
 
-   <script type="importmap">
-    {
-      "imports": {
-        "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
-      }
-    }
-  </script>
-   <script type="module" src="./src/js/app.js"></script>
+                <section id="form-section" class="add-deadline-card hidden">
+                    <h2><i class="fas fa-edit"></i> Cadastrar Novo Prazo</h2>
+                    
+                    <form id="form-prazo" class="form-grid">
+                        
+                        <div class="form-group">
+                            <label for="titulo">Título da Atividade</label>
+                            <input type="text" id="titulo" required placeholder="Ex: Prova Prática">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="disciplina">Disciplina</label>
+                            <select id="disciplina" required>
+                                <option value="">Selecione a disciplina...</option>
+                                <option value="Banco de Dados">Banco de Dados</option>
+                                <option value="Engenharia de Software">Engenharia de Software</option>
+                                <option value="Redes de Computadores">Redes de Computadores</option>
+                                <option value="Sistemas Operacionais">Sistemas Operacionais</option>
+                                <option value="Programação Web">Programação Web</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="data_entrega">Data de Entrega</label>
+                            <input type="date" id="data_entrega" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tipo_evento">Tipo de Evento</label>
+                            <select id="tipo_evento" required>
+                                <option value="prova">Prova</option>
+                                <option value="trabalho">Trabalho</option>
+                                <option value="atividade">Atividade</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Material de Apoio</label>
+                            <label for="post-file" class="custom-file-upload">
+                                <i class="fas fa-cloud-upload-alt"></i> Anexar PDF ou Imagem
+                            </label>
+                            <input type="file" id="post-file" style="display: none;">
+                            <span id="file-name-display">Nenhum arquivo selecionado</span>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="descricao">Descrição / Observações</label>
+                            <textarea id="descricao" rows="3" placeholder="Descreva os detalhes e requisitos do prazo..."></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width checkbox-wrapper" id="label-public" style="display: none;">
+                            <input type="checkbox" id="post-public">
+                            <label for="post-public">Tornar este prazo PÚBLICO para toda a turma</label>
+                        </div>
+                        
+                        <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 10px;">
+                            <button type="submit" id="btn-salvar" class="btn btn-primary">Gravar no Sistema</button>
+                            <button type="button" id="cancelar-form" class="btn btn-danger">Cancelar</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="deadlines-container">
+                    <div id="empty-state" class="hidden empty-state">
+                        <i class="fas fa-inbox fa-3x"></i>
+                        <p>Nenhum prazo encontrado para o seu período.</p>
+                    </div>
+                    <div id="prazos-list" class="prazos-grid">
+                        </div>
+                </section>
+            </div>
+
+            <aside class="calendar-column">
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <button class="btn-icon" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                        <h3 id="month-year-display">Carregando...</h3>
+                        <button class="btn-icon" id="next-month"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                    </div>
+                    <div class="calendar-days" id="calendar-days">
+                        </div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script type="module" src="src/js/app.js"></script>
 </body>
-
 </html>
