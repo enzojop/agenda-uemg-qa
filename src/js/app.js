@@ -5,7 +5,7 @@ import {
 } from './supabase.js';
 
 // IMPORTANTE: Importando nossa fábrica de validação!
-import { criarObjetoPrazo } from './utils.js';
+import { criarObjetoPrazo, validarEmailInstitucional } from './utils.js';
 
 // 1. ESTADO GLOBAL
 const state = {
@@ -71,7 +71,7 @@ const initApp = () => {
         }
     });
 
-    // --- SUBMIT AUTENTICAÇÃO ---
+   // --- SUBMIT AUTENTICAÇÃO ---
     elements.authForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('auth-email').value;
@@ -90,6 +90,15 @@ const initApp = () => {
                 const periodo = document.getElementById('auth-periodo').value;
                 const chave = document.getElementById('chave-rep').value;
 
+                // 1. Define a role baseada na chave do coordenador
+                const roleFinal = (chave === 'UEMG2026') ? 'representative' : 'student';
+
+                // 2. A TRAVA INSTITUCIONAL (Bloqueia quem não é da UEMG)
+                if (!validarEmailInstitucional(email, roleFinal)) {
+                    throw new Error('Acesso negado. Utilize seu e-mail institucional (@discente.uemg.br)');
+                }
+
+                // 3. Se passar, cadastra no banco
                 await cadastrarUsuario(email, password, { 
                     name: nome, 
                     period: parseInt(periodo), 
@@ -100,7 +109,7 @@ const initApp = () => {
                 elements.tabLogin.click(); // Volta para a aba de login
             }
         } catch (err) {
-            Swal.fire('Erro', err.message, 'error');
+            Swal.fire('Atenção', err.message, 'warning'); // Mudei para warning para não parecer um "erro" fatal do sistema
         } finally {
             elements.btnAuthSubmit.disabled = false;
             elements.btnAuthSubmit.textContent = modoAtual === 'login' ? 'Entrar' : 'Criar Conta';

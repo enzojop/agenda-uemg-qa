@@ -47,18 +47,23 @@ export const criarObjetoPrazo = (titulo, descricao, data, tipo, periodo, discipl
         throw new Error("O prazo deve ser direcionado a um período acadêmico");
     }
     
+    // 👇 A TRAVA QUE FALTAVA ESTÁ AQUI! 👇
+    if (!tipo || tipo.trim() === '') {
+        throw new Error("O tipo de evento é obrigatório");
+    }
+    
     // 2. Validação de Regra de Negócio (Data)
     if (!validarDataEntrega(data)) {
         throw new Error("data de entrega não pode estar no passado");
     }
 
-    // 3. Retorno mapeado para o seu Script SQL
+    // 3. Retorno mapeado para o seu Script SQL atual
     return {
         title: titulo.trim(),                   // Coluna SQL: title
-        discipline_name: disciplina.trim(),     // Coluna SQL: discipline_name
-        description: descricao ? descricao.trim() : '', // Coluna SQL: description
-        event_date: data,                       // Coluna SQL: event_date
-        tipo_evento: tipo,                      // Coluna SQL: tipo_evento
-        periodo: Number(periodo)                // Para filtros de busca
+        disciplina: disciplina.trim(),          // AQUI MUDOU: Coluna SQL exata do seu print
+        description: descricao ? descricao.trim() : '', 
+        event_date: data,                       
+        tipo_evento: tipo,                      
+        periodo: Number(periodo)                
     };
 };
