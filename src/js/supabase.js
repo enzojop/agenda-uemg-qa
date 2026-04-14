@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_KEY } from './env.js';
+//import { SUPABASE_URL, SUPABASE_KEY } from './env.js';
 
 // Tenta usar o process.env injetado do build ou Jest, senão usa as credenciais ativas via import (evitando vazar no git)
 const supabaseUrl = (typeof process !== 'undefined' && process.env.SUPABASE_URL) ? process.env.SUPABASE_URL : SUPABASE_URL;
