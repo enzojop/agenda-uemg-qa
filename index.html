@@ -14,22 +14,21 @@
 
 <body>
    <!-- Login Screen -->
-<main id="login-screen" class="view active">
-        
-        <div class="login-brand">
-            <h1 class="brand-title">UNIVERSIDADE</h1>
-            <h1 class="brand-title">DO ESTADO DE MINAS GERAIS</h1>
-        </div>
+   <main id="login-screen" class="view active">
+      <div class="login-brand">
+         <h1>UNIVERSIDADE</h1>
+         <h1>DO ESTADO DE MINAS GERAIS</h1>
+      </div>
       
-      <div class="login-box glass-panel" style="max-width:480px; width:100%; padding:3rem; border-radius:6px; text-align:center;">
+      <div class="login-box glass-panel">
          <div class="login-options">
             <!-- Sistema de Tabs Simples -->
-            <div class="auth-tabs" style="display:flex; justify-content:center; gap:1rem; margin-bottom:1.5rem;">
+            <div class="auth-tabs">
                <button id="tab-login" class="btn btn-primary">Entrar</button>
-               <button id="tab-register" class="btn btn-danger" style="background:transparent; border: 1px solid var(--text-muted); color: var(--text-main);">Criar Conta</button>
+               <button id="tab-register" class="btn btn-danger">Criar Conta</button>
             </div>
 
-            <form id="auth-form" class="form-grid" style="grid-template-columns: 1fr; margin-top:2rem;">
+            <form id="auth-form" class="form-grid">
                <div class="form-group">
                   <input type="email" id="auth-email" name="email" required placeholder="Seu endereço de e-mail institucional">
                </div>
@@ -37,20 +36,20 @@
                   <input type="password" id="auth-password" name="password" required placeholder="Sua senha secreta">
                </div>
                <div class="form-group hidden" id="register-role-group">
-                  <label for="auth-role" style="text-align:left;">Qual o seu perfil funcional?</label>
+                  <label for="auth-role">Qual o seu perfil funcional?</label>
                   <select id="auth-role" name="role">
                      <option value="aluno">Sou Estudante</option>
                      <option value="professor">Sou Docente/Professor</option>
                   </select>
                </div>
                <div class="form-group hidden" id="register-academico-group">
-                  <label for="auth-curso" style="text-align:left;">Curso Vinculado</label>
+                  <label for="auth-curso">Curso Vinculado</label>
                   <select id="auth-curso" name="curso" disabled>
                      <option value="Sistemas de Informação" selected>Sistemas de Informação</option>
                   </select>
                </div>
                <div class="form-group hidden" id="register-periodo-group">
-                  <label for="auth-periodo" style="text-align:left;">Seu Período / Carga</label>
+                  <label for="auth-periodo">Seu Período / Carga</label>
                   <select id="auth-periodo" name="periodo">
                      <option value="1">1º Período</option>
                      <option value="2">2º Período</option>
@@ -62,11 +61,11 @@
                      <option value="8">8º Período</option>
                   </select>
                </div>
-               <div class="form-group actions" style="margin-top:1.5rem;">
+               <div class="form-group actions">
                   <button type="submit" class="btn btn-primary btn-block" id="btn-auth-submit">Entrar</button>
                </div>
-               <div style="text-align:center; width:100%; margin-top: 1.5rem;">
-                  <a href="#" style="color:var(--primary); font-weight:600; font-size:0.9rem; text-decoration:none;">Esqueceu a senha?</a>
+               <div class="forgot-password-container">
+                  <a href="#" class="forgot-password-link">Esqueceu a senha?</a>
                </div>
             </form>
          </div>

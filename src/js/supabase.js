@@ -1,15 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_KEY } from './env.js';
 
-// Conforme solicitado: utilização de process.env. 
-// Como navegadores não possuem process.env nativamente sem usar Webpack/Vite:
-// Oferecemos um fallback das chaves reias (do .env) para que os testes no servidor local (npx serve) conectem imediatamente com seu banco Supabase.
-// A pipeline de CI/CD fará a substituição estática das variáveis "process.env" na publicação para o GitHub Pages.
-const fallbackUrl = 'https://miimyptdojvvofwoxuub.supabase.co';
-const fallbackKey = 'sb_publishable_DvIThg8wOmVjoVncrwOu4A_vU9FTLVB';
-
-// Tenta usar o process.env injetado do build ou Jest, senão usa as credenciais ativas do Enzo.
-const supabaseUrl = (typeof process !== 'undefined' && process.env.SUPABASE_URL) ? process.env.SUPABASE_URL : fallbackUrl;
-const supabaseKey = (typeof process !== 'undefined' && process.env.SUPABASE_ANON_KEY) ? process.env.SUPABASE_ANON_KEY : fallbackKey;
+// Tenta usar o process.env injetado do build ou Jest, senão usa as credenciais ativas via import (evitando vazar no git)
+const supabaseUrl = (typeof process !== 'undefined' && process.env.SUPABASE_URL) ? process.env.SUPABASE_URL : SUPABASE_URL;
+const supabaseKey = (typeof process !== 'undefined' && process.env.SUPABASE_ANON_KEY) ? process.env.SUPABASE_ANON_KEY : SUPABASE_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
