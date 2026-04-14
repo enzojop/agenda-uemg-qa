@@ -308,7 +308,7 @@ const renderizarPrazos = () => {
             
             <h3 class="prazo-title">${prazo.title}</h3>
             
-            ${prazo.discipline_name ? `<span style="font-size: 0.8rem; color: var(--primary); font-weight: 700; display: block; margin-bottom: 10px;"><i class="fas fa-book"></i> ${prazo.discipline_name}</span>` : ''}
+            ${prazo.disciplina ? `<span style="font-size: 0.8rem; color: var(--primary); font-weight: 700; display: block; margin-bottom: 10px;"><i class="fas fa-book"></i> ${prazo.discipline_name}</span>` : ''}
             
             <p class="prazo-body">${prazo.description || ''}</p>
             
