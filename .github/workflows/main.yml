@@ -32,10 +32,10 @@ jobs:
 
       - name: 🔧 Preparar Variáveis para GH Pages (Vanilla JS)
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        # Substitui process.env pelas strings fixas para rodar diretamente sem Webpack/Vite
+        # Cria o arquivo env.js com os segredos do GitHub para ficar disponível na versão final sem ir pro repositório fonte
         run: |
-          sed -i "s|process.env.SUPABASE_URL|'${{ secrets.SUPABASE_URL }}'|g" src/js/supabase.js
-          sed -i "s|process.env.SUPABASE_ANON_KEY|'${{ secrets.SUPABASE_ANON_KEY }}'|g" src/js/supabase.js
+          echo "export const SUPABASE_URL = '${{ secrets.SUPABASE_URL }}';" > src/js/env.js
+          echo "export const SUPABASE_KEY = '${{ secrets.SUPABASE_ANON_KEY }}';" >> src/js/env.js
 
       - name: 🚀 Deploy para GitHub Pages
         # O deploy só ocorre se os testes passarem e o código for para a main
