@@ -1,8 +1,11 @@
 import { 
     persistirPrazo, buscarPrazos, cadastrarUsuario, logarUsuario, 
     deslogarUsuario, getSessaoAtual, excluirPrazo, atualizarPrazo,
-    uploadArquivo 
+    uploadArquivo, buscarDisciplinasPorPeriodo // <-- NOVO IMPORT AQUI
 } from './supabase.js';
+
+// IMPORTANTE: Importando nossa fábrica de validação!
+import { criarObjetoPrazo } from './utils.js';
 
 // 1. ESTADO GLOBAL
 const state = {
@@ -44,10 +47,8 @@ const initApp = () => {
         modoAtual = 'register';
         elements.registerFields.classList.remove('hidden');
         elements.btnAuthSubmit.textContent = 'Criar Minha Conta';
-        
         elements.tabRegister.classList.add('active');
         elements.tabLogin.classList.remove('active');
-        
         elements.tabRegister.style.background = "";
         elements.tabLogin.style.background = "";
     });
@@ -56,10 +57,8 @@ const initApp = () => {
         modoAtual = 'login';
         elements.registerFields.classList.add('hidden');
         elements.btnAuthSubmit.textContent = 'Entrar';
-        
         elements.tabLogin.classList.add('active');
         elements.tabRegister.classList.remove('active');
-        
         elements.tabLogin.style.background = "";
         elements.tabRegister.style.background = "";
     });
@@ -91,18 +90,14 @@ const initApp = () => {
                 const periodo = document.getElementById('auth-periodo').value;
                 const chave = document.getElementById('chave-rep').value;
 
-                const { user, session } = await cadastrarUsuario(email, password, { 
+                await cadastrarUsuario(email, password, { 
                     name: nome, 
                     period: parseInt(periodo), 
                     secret_key: chave 
                 });
 
-                if (user && !session) {
-                    Swal.fire('Sucesso!', 'Confirme seu e-mail institucional.', 'success');
-                } else {
-                    const roleFinal = (chave === 'UEMG2026') ? 'representative' : 'student';
-                    entrarNoDashboard(roleFinal, email, periodo);
-                }
+                Swal.fire('Sucesso!', 'Conta criada. Faça login para continuar.', 'success');
+                elements.tabLogin.click(); // Volta para a aba de login
             }
         } catch (err) {
             Swal.fire('Erro', err.message, 'error');
@@ -159,16 +154,25 @@ const initApp = () => {
 
             const sessao = await getSessaoAtual();
             
-            // O objeto agora inclui a Disciplina
+            const titulo = document.getElementById('titulo').value;
+            const disciplina = document.getElementById('disciplina').value;
+            const descricao = document.getElementById('descricao').value;
+            const dataInput = document.getElementById('data_entrega').value;
+            const tipo = document.getElementById('tipo_evento').value;
+            const periodo = state.userPeriod; 
+
+            // 1. Validação Segura via utils.js
+            const dadosValidados = criarObjetoPrazo(titulo, descricao, dataInput, tipo, periodo, disciplina);
+
+            // 2. Removemos 'periodo' pois ele não existe na tabela 'events' do seu SQL
+            delete dadosValidados.periodo;
+
+            // 3. Monta o objeto exato para o Supabase
             const novoPrazo = {
+                ...dadosValidados,
                 user_id: sessao.user.id,
-                title: document.getElementById('titulo').value,
-                disciplina: document.getElementById('disciplina').value, // <-- NOVO CAMPO AQUI
-                description: document.getElementById('descricao').value,
-                event_date: document.getElementById('data_entrega').value.split('T')[0],
-                tipo_evento: document.getElementById('tipo_evento').value,
-                is_public: document.getElementById('post-public')?.checked || false,
-                file_url: fileUrl
+                file_url: fileUrl,
+                is_public: document.getElementById('post-public')?.checked || false
             };
 
             if (state.editingId) {
@@ -185,7 +189,7 @@ const initApp = () => {
             document.getElementById('file-name-display').textContent = "Nenhum arquivo selecionado"; 
             carregarPrazos();
         } catch (err) {
-            Swal.fire('Erro', err.message, 'error');
+            Swal.fire('Atenção', err.message, 'warning');
         } finally {
             btnSalvar.disabled = false;
             btnSalvar.textContent = 'Gravar no Sistema';
@@ -205,7 +209,8 @@ const initApp = () => {
 };
 
 // --- FUNÇÕES DE DASHBOARD E RENDERIZAÇÃO ---
-function entrarNoDashboard(role, email, period) {
+// Adicionamos 'async' aqui para poder carregar as disciplinas
+async function entrarNoDashboard(role, email, period) {
     state.userRole = role;
     state.userPeriod = period;
     
@@ -219,27 +224,45 @@ function entrarNoDashboard(role, email, period) {
         labelPublic.style.display = (role === 'representative') ? 'flex' : 'none';
     }
 
-    getSessaoAtual().then(sessao => {
-        if (sessao?.user) {
-            const meta = sessao.user.user_metadata || {};
-            const nomeExibicao = meta.name || email.split('@')[0];
-            const periodoExibicao = meta.period || period;
+    const sessao = await getSessaoAtual();
+    if (sessao?.user) {
+        const meta = sessao.user.user_metadata || {};
+        const nomeExibicao = meta.name || email.split('@')[0];
+        const periodoExibicao = meta.period || period;
 
-            elements.userNameLabel.textContent = nomeExibicao;
-            document.getElementById('user-period-label').textContent = periodoExibicao ? `${periodoExibicao}º Período` : 'Sem período';
-            
-            elements.userRoleLabel.textContent = role === 'representative' ? 'Representante' : 'Estudante';
-            elements.userAvatar.textContent = nomeExibicao.charAt(0).toUpperCase();
-        }
-    });
+        elements.userNameLabel.textContent = nomeExibicao;
+        document.getElementById('user-period-label').textContent = periodoExibicao ? `${periodoExibicao}º Período` : 'Sem período';
+        
+        elements.userRoleLabel.textContent = role === 'representative' ? 'Representante' : 'Estudante';
+        elements.userAvatar.textContent = nomeExibicao.charAt(0).toUpperCase();
+    }
     
+    // CARREGA AS DISCIPLINAS DO BANCO
+    await carregarDisciplinas(period);
+
     carregarPrazos();
     renderizarCalendario();
 }
 
+// BUSCA DISCIPLINAS DINAMICAMENTE
+const carregarDisciplinas = async (periodo) => {
+    try {
+        const disciplinas = await buscarDisciplinasPorPeriodo(periodo);
+        const select = document.getElementById('disciplina');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">Selecione a disciplina...</option>';
+        disciplinas.forEach(d => {
+            select.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+        });
+    } catch (err) {
+        console.error("Erro ao carregar disciplinas:", err);
+    }
+};
+
 const carregarPrazos = async () => {
     try {
-        const dados = await buscarPrazos(state.userRole === 'student' ? state.userPeriod : null);
+        const dados = await buscarPrazos();
         state.prazos = dados || [];
         renderizarPrazos();
     } catch (err) {
@@ -276,7 +299,7 @@ const renderizarPrazos = () => {
             
             <h3 class="prazo-title">${prazo.title}</h3>
             
-            ${prazo.disciplina ? `<span style="font-size: 0.8rem; color: var(--primary); font-weight: 700; display: block; margin-bottom: 10px;"><i class="fas fa-book"></i> ${prazo.disciplina}</span>` : ''}
+            ${prazo.discipline_name ? `<span style="font-size: 0.8rem; color: var(--primary); font-weight: 700; display: block; margin-bottom: 10px;"><i class="fas fa-book"></i> ${prazo.discipline_name}</span>` : ''}
             
             <p class="prazo-body">${prazo.description || ''}</p>
             

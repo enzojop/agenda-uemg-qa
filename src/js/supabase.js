@@ -47,6 +47,21 @@ export const getSessaoAtual = async () => {
 };
 
 // ===================================
+// DISCIPLINAS (Grade Curricular UEMG)
+// ===================================
+
+export const buscarDisciplinasPorPeriodo = async (periodo) => {
+    const { data, error } = await supabase
+        .from('disciplines')
+        .select('name')
+        .eq('period', periodo)
+        .order('name', { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return data;
+};
+
+// ===================================
 // STORAGE (Upload de Arquivos)
 // ===================================
 
@@ -87,18 +102,15 @@ export const persistirPrazo = async (prazo) => {
     return data;
 };
 
-export const buscarPrazos = async (periodoParaFiltrar = null) => {
+export const buscarPrazos = async () => {
     try {
-        // Tabela 'events' conforme seu SQL
-        let query = supabase.from('events').select('*');
-        
-        // Se for aluno, o SQL permite filtrar ou o RLS cuida
-        if (periodoParaFiltrar) {
-            // Nota: Se você não salvou o período no evento, o aluno verá os is_public=true
-            query = query.or(`is_public.eq.true`); 
-        }
-        
-        const { data, error } = await query.order('event_date', { ascending: true });
+        // Graças ao seu RLS no SQL, o banco já devolve APENAS os eventos
+        // que o usuário logado tem permissão para ver (públicos + os dele mesmo)
+        const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .order('event_date', { ascending: true });
+            
         if (error) throw new Error(error.message);
         return data;
     } catch(e) {
